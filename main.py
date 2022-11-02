@@ -9,6 +9,7 @@ from datetime import datetime
 
 def main():
     a = WeatherParser()
+    a.years_iterating()
 
 
 class WeatherParser:
@@ -63,18 +64,21 @@ class WeatherParser:
                 x = str(td).replace('\n', '')
                 if x != '':
                     appending_text.append(td.text)
+
             insert.insert_new_row(self.convert_items_to_float(appending_text), year)
             appending_text = []
 
     def convert_items_to_float(self, item_list):
         result_list = []
         for item in item_list:
-            if item == '': item.replace('', None)
             try:
                 result_list.append(float(item))
             except ValueError:
+                if item == '':
+                    item = None
                 result_list.append(item)
 
+        print(result_list)
         return result_list
 
 
@@ -123,26 +127,26 @@ class Database:
         text = """
         CREATE TABLE IF NOT EXISTS {}
         (
-        time_UTC CHARACTER(15),
-        date CHARACTER(15),
-        wind_direction CHARACTER(10),
-        wind_spead CHARACTER(15),
+        time_UTC DOUBLE PRECISION,
+        date CHARACTER(20),
+        wind_direction CHARACTER(20),
+        wind_spead CHARACTER(20),
         visibility CHARACTER(50), 
         conditions CHARACTER(50),
         cloudiness CHARACTER(50),
-        T CHARACTER(15),
-        Td CHARACTER(15),
-        f CHARACTER(15),
-        Te CHARACTER(15),
-        Tes CHARACTER(15),
+        T DOUBLE PRECISION,
+        Td DOUBLE PRECISION,
+        f DOUBLE PRECISION,
+        Te DOUBLE PRECISION,
+        Tes DOUBLE PRECISION,
         Comfort CHARACTER(50),
-        P CHARACTER(15),
-        Po CHARACTER(15),
-        Tmin CHARACTER(15),
-        Tmax CHARACTER(15),
-        R CHARACTER(15),
-        R24 CHARACTER(15),
-        S CHARACTER(15),
+        P DOUBLE PRECISION,
+        Po DOUBLE PRECISION,
+        Tmin DOUBLE PRECISION,
+        Tmax DOUBLE PRECISION,
+        R DOUBLE PRECISION,
+        R24 DOUBLE PRECISION,
+        S DOUBLE PRECISION,
         id SERIAL PRIMARY KEY
         );
         """.format(year)
