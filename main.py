@@ -5,11 +5,15 @@ from bs4 import BeautifulSoup
 import requests
 import psycopg2
 from datetime import datetime
+from threading import Thread
 
 
 def main():
     a = WeatherParser()
-    a.years_iterating()
+    TR1 = Thread(target=a.years_iterating, args=(2012, 2))
+    TR2 = Thread(target=a.years_iterating, args=(2013, 2))
+    TR1.start()
+    TR2.start()
 
 
 class WeatherParser:
@@ -19,8 +23,8 @@ class WeatherParser:
         self.current_date = datetime.now()
         self.reference_url = 'http://www.pogodaiklimat.ru/weather.php?id=34927&bday=1&fday={}&amonth={}&ayear={}&bot=2'
 
-    def years_iterating(self):
-        for year in range(2012, int(self.current_date.year)+1):
+    def years_iterating(self, start_year=2012, step_fro_iteration=1):
+        for year in range(start_year, int(self.current_date.year)+1, step_fro_iteration):
             for month in range(1, 13):
                 if year in self.leap_years and month == 2:
                     current_url = self.reference_url.format(29, month, self.current_date.year)
