@@ -4,6 +4,7 @@
 from bs4 import BeautifulSoup
 import requests
 import psycopg2
+from datetime import datetime
 
 
 def main():
@@ -13,21 +14,18 @@ def main():
 class WeatherParser:
     def __init__(self):
         self.calendar = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31]
-        self.leap_years = [24, 20, 16, 12]
-        self.column_names = ['Ветер напр.', 'Ветер, м/с', 'Видим.', 'Явления',
-                             'Облачность', 'Т(С)', 'Тd(С)', 'f(%)', 'Тe(С)', 'Тes(С)',
-                             'Комфортность', 'P(гПа)', 'Po(гПа)', 'Тmin(С)', 'Tmax(С), R(мм)',
-                             'R24(мм)', 'S(см)']
+        self.leap_years = [2024, 2020, 2016, 2012]
+        self.current_date = datetime.now()
         self.reference_url = 'http://www.pogodaiklimat.ru/weather.php?id=34927&bday=1&fday={}&amonth={}&ayear={}&bot=2'
 
     def years_iterating(self):
-        for year in range(12, 23):
+        for year in range(2012, int(self.current_date.year)+1):
             for month in range(1, 13):
                 if year in self.leap_years and month == 2:
-                    current_url = self.reference_url.format(29, year, '20' + str(year))
+                    current_url = self.reference_url.format(29, month, self.current_date.year)
                     self.weather_parsing(current_url, year)
                 else:
-                    current_url = self.reference_url.format(self.calendar[month - 1], month, '20' + str(year))
+                    current_url = self.reference_url.format(self.calendar[month - 1], month, self.current_date.year)
                     self.weather_parsing(current_url, year)
 
     def weather_parsing(self, url, year):
@@ -53,7 +51,7 @@ class WeatherParser:
         tr_from_weather_table = weather_table.findAll('tr', {'height': '30'})
 
         insert = Database()
-        insert.crating_new_table('y20' + str(year))
+        insert.crating_new_table('y' + str(year))
 
         counter = 0
         appending_text = []
@@ -65,12 +63,13 @@ class WeatherParser:
                 x = str(td).replace('\n', '')
                 if x != '':
                     appending_text.append(td.text)
-            insert.insert_new_row(appending_text, year)
+            insert.insert_new_row(self.convert_items_to_float(appending_text), year)
             appending_text = []
 
     def convert_items_to_float(self, item_list):
         result_list = []
         for item in item_list:
+            if item == '': item.replace('', None)
             try:
                 result_list.append(float(item))
             except ValueError:
@@ -112,7 +111,7 @@ class Database:
                 print('База данных закрыта')
 
     def insert_new_row(self, text_to_insert, year):
-        current_year = 'y20'+str(year)
+        current_year = 'y'+str(year)
         text = """INSERT INTO {} VALUES
         (
         %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, 
