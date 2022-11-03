@@ -27,10 +27,10 @@ class WeatherParser:
         for year in range(start_year, int(self.current_date.year)+1, step_fro_iteration):
             for month in range(1, 13):
                 if year in self.leap_years and month == 2:
-                    current_url = self.reference_url.format(29, month, self.current_date.year)
+                    current_url = self.reference_url.format(29, month, year)
                     self.weather_parsing(current_url, year)
                 else:
-                    current_url = self.reference_url.format(self.calendar[month - 1], month, self.current_date.year)
+                    current_url = self.reference_url.format(self.calendar[month - 1], month, year)
                     self.weather_parsing(current_url, year)
 
     def weather_parsing(self, url, year):
@@ -68,19 +68,25 @@ class WeatherParser:
                 x = str(td).replace('\n', '')
                 if x != '':
                     appending_text.append(td.text)
-
-            insert.insert_new_row(self.convert_items_to_float(appending_text), year)
+            insert.insert_new_row(self.convert_items_to_float(appending_text, year), year)
             appending_text = []
 
-    def convert_items_to_float(self, item_list):
+    # to do: в поле с датой в 10-ом месяце пропадает ноль
+    def convert_items_to_float(self, item_list, year):
         result_list = []
-        for item in item_list:
+        counter = 0
+        while counter < len(item_list):
+            item = item_list[counter]
+            if counter == 1:
+                day, mounth = item.split('.')
+                item = f'{year}-{mounth}-{day}'
             try:
-                result_list.append(float(item))
+                result_list.append(float('{0:.2f}'.format(item)))
             except ValueError:
                 if item == '':
                     item = None
                 result_list.append(item)
+            counter += 1
 
         print(result_list)
         return result_list
@@ -132,7 +138,7 @@ class Database:
         CREATE TABLE IF NOT EXISTS {}
         (
         time_UTC DOUBLE PRECISION,
-        date CHARACTER(20),
+        date DATE,
         wind_direction CHARACTER(20),
         wind_spead CHARACTER(20),
         visibility CHARACTER(50), 
@@ -156,6 +162,6 @@ class Database:
         """.format(year)
         return self.request_to_bd(text)
 
-
+    
 if __name__ == '__main__':
     main()
