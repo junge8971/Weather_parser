@@ -28,7 +28,6 @@ class WeatherParser:
                     current_url = self.reference_url.format(start_day, 29, month, year)
                     self.weather_parsing(current_url, year)
                 else:
-                    print('ok4')
                     if end_day is not None:
                         current_url = self.reference_url.format(start_day, end_day, month, year)
                         self.weather_parsing(current_url, year)
@@ -94,7 +93,7 @@ class WeatherParser:
         print(result_list)
         return result_list
 
-    def update_weather_data(self):
+    def update_weather_data(self) -> str:
         connect_to_bd = Database()
         created_tables = connect_to_bd.checking_for_tables()
 
@@ -104,19 +103,15 @@ class WeatherParser:
 
         last_received_day_dirt = connect_to_bd.last_received_day(list_of_years[-1])
         last_received_date = last_received_day_dirt[0][0]
-        print(last_received_date)
 
         if last_received_date != self.current_date.date():
             delta_time = relativedelta(self.current_date.date(), last_received_date)
             if delta_time.months == 0 and delta_time.years == 0:
-                print('ok1')
                 if last_received_date.day == self.calendar[last_received_date.month+1]:
-                    print('ok2')
                     self.years_iterating(start_year=self.current_date.year,
                                          start_month=self.current_date.month,
                                          end_day=self.current_date.day-1)
                 else:
-                    print('ok3')
                     self.years_iterating(start_year=self.current_date.year,
                                          start_month=self.current_date.month,
                                          start_day=last_received_date.day,
