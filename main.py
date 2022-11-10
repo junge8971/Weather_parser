@@ -71,6 +71,7 @@ class WeatherParser:
                 x = str(td).replace('\n', '')
                 if x != '':
                     appending_text.append(td.text)
+
             insert.insert_new_row(self.convert_items_to_float(appending_text, year), 'y'+str(year))
             appending_text = []
 
@@ -78,10 +79,14 @@ class WeatherParser:
         result_list = []
         counter = 0
         while counter < len(item_list):
-            item = item_list[counter]
             if counter == 1:
-                day, month = item.split('.')
-                item = f'{year}-{month}-{day}'
+                counter += 1
+                continue
+            item = item_list[counter]
+            if counter == 0:
+                second_item = item_list[1]
+                day, month = second_item.split('.')
+                item = f'{year}-{month}-{day} {item}:00:00 Europe/Moscow'
             try:
                 result_list.append(float('{0:.2f}'.format(item)))
             except ValueError:
@@ -102,19 +107,22 @@ class WeatherParser:
             list_of_years.append(item[0])
 
         last_received_day_dirt = connect_to_bd.last_received_day(list_of_years[-1])
-        last_received_date = last_received_day_dirt[0][0]
+        last_received_date = last_received_day_dirt[0][0].date()
+        print(type(last_received_date))
+        print(last_received_date)
 
         if last_received_date != self.current_date.date():
             delta_time = relativedelta(self.current_date.date(), last_received_date)
             if delta_time.months == 0 and delta_time.years == 0:
-                if last_received_date.day == self.calendar[last_received_date.month+1]:
+                try:
+                    if last_received_date.day == self.calendar[last_received_date.month+1]:
+                        self.years_iterating(start_year=self.current_date.year,
+                                             start_month=self.current_date.month,
+                                             end_day=self.current_date.day-1)
+                except IndexError:
                     self.years_iterating(start_year=self.current_date.year,
                                          start_month=self.current_date.month,
-                                         end_day=self.current_date.day-1)
-                else:
-                    self.years_iterating(start_year=self.current_date.year,
-                                         start_month=self.current_date.month,
-                                         start_day=last_received_date.day,
+                                         start_day=last_received_date.day+1,
                                          end_day=self.current_date.day - 1)
         else:
             return 'No need to update'
@@ -156,7 +164,7 @@ class Database:
         text = """INSERT INTO {} VALUES
         (
         %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, 
-        %s, %s, %s, %s, %s, %s, %s, %s, %s, %s 
+        %s, %s, %s, %s, %s, %s, %s, %s, %s 
         )""".format(year)
         self.request_to_bd(text, params=text_to_insert)
 
@@ -164,8 +172,7 @@ class Database:
         text = """
         CREATE TABLE IF NOT EXISTS {}
         (
-        time_UTC DOUBLE PRECISION,
-        date DATE,
+        date_and_time_UTC TIMESTAMPTZ PRIMARY KEY,
         wind_direction CHARACTER(20),
         wind_spead CHARACTER(20),
         visibility CHARACTER(50), 
@@ -184,7 +191,7 @@ class Database:
         R DOUBLE PRECISION,
         R24 DOUBLE PRECISION,
         S DOUBLE PRECISION,
-        id SERIAL PRIMARY KEY
+        id SERIAL
         );
         """.format(year)
         return self.request_to_bd(text)
@@ -198,11 +205,9 @@ class Database:
 
     def last_received_day(self, year: str) -> str:
         text = """
-        SELECT date FROM {} 
-        ORDER BY date DESC
-        limit 1;
-        
-        """.format(year)
+        SELECT date_and_time_UTC FROM {} 
+        ORDER BY date_and_time_UTC DESC
+        limit 1;""".format(year)
         return self.request_to_bd(text)
 
 
@@ -222,7 +227,7 @@ def main():
         else:
             print("""
             parse - спарсить всё
-            update - обновить уже имеющиеся данные
+            update - обновить уже имеющиеся данные в перделах текущего месяца
             """)
 
 
