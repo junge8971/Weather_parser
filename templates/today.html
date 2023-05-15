@@ -1,0 +1,43 @@
+{% extends 'main_template.html' %}
+
+{% block title %}
+    Погода сегодня
+{% endblock %}
+
+{% block main %}
+    <h1>Погода на сегодня</h1>
+    <div class="container">
+        <div class="row justify-content-center align-items-center g-2">
+            <div class="col">Текущее время</div>
+            <div class="col">12:00</div>
+        </div>
+        <div class="row justify-content-center align-items-center g-2">
+            <div class="col">Время последнего обновления</div>
+            <div class="col">12:00</div>
+        </div>
+        <div class="row justify-content-center align-items-center g-2">
+            <div class="col">Температура</div>
+            <div class="col">20 градусов</div>
+        </div>
+        <div class="row justify-content-center align-items-center g-2">
+            <div class="col">Направление ветра</div>
+            <div class="col">ЮЗ</div>
+        </div>
+        <div class="row justify-content-center align-items-center g-2">
+            <div class="col">Скорость ветра</div>
+            <div class="col">10 м/с</div>
+        </div>
+        <div class="row justify-content-center align-items-center g-2">
+            <div class="col">облачность</div>
+            <div class="col">ясно</div>
+        </div>
+        <div class="row justify-content-center align-items-center g-2">
+            <div class="col">Комфортность</div>
+            <div class="col">по сезону</div>
+        </div>
+        <div class="row justify-content-center align-items-center g-2">
+            <div class="col">Явление</div>
+            <div class="col">Дождь</div>
+        </div>
+    </div>
+{% endblock %}
