@@ -98,22 +98,36 @@ class WeatherParser:
 
         return result_list
 
-    def update_weather_data(self) -> str:
+    def get_list_of_years_from_bd(self) -> list[str]:
         connect_to_bd = Database()
         created_tables = connect_to_bd.checking_for_tables()
 
         list_of_years = []
         for item in created_tables:
             list_of_years.append(item[0])
+        return list_of_years
+
+    def get_last_received_date_and_time(self, list_of_years: list[str]) -> datetime:
+        connect_to_bd = Database()
+        list_of_years = self.get_list_of_years_from_bd()
 
         last_received_day_dirt = connect_to_bd.last_received_day(list_of_years[-1])
-        last_received_date = last_received_day_dirt[0][0].date()
+        last_received_date = last_received_day_dirt[0][0]
+        return last_received_date
 
-        if last_received_date != self.current_date.date():
-            delta_time = relativedelta(self.current_date.date(), last_received_date)
-            self.years_iterating(start_year=last_received_date.year,
-                                 start_month=last_received_date.month,
-                                 start_day=last_received_date.day)
+    def update_weather_data(self) -> str:
+        list_of_years = self.get_list_of_years_from_bd()
+        last_received_date = self.get_last_received_date_and_time(list_of_years)
+        if last_received_date.date() != self.current_date.date():
+            if last_received_date.month == self.current_date.month:
+            # delta_time = relativedelta(self.current_date.date(), last_received_date)
+                self.years_iterating(start_year=last_received_date.year,
+                                     start_month=last_received_date.month,
+                                     start_day=last_received_date.day,
+                                     end_day=self.current_date.day)
+                return 'Update ok'
+            else:
+                return 'No way to update'
         else:
             return 'No need to update'
 
@@ -148,7 +162,6 @@ class Database:
             if connect:
                 cursor.close()
                 connect.close()
-                print('База данных закрыта')
 
     def insert_new_row(self, text_to_insert: list, year: str):
         text = """INSERT INTO {} VALUES
@@ -216,7 +229,7 @@ def main():
             print(a.update_weather_data())
         elif command == 'custom_pars':
             a = WeatherParser()
-            a.years_iterating(start_year=2023, start_month=1)
+            a.years_iterating(start_year=2023, start_month=5, end_day=11)
         else:
             print("""
             parse - спарсить всё
