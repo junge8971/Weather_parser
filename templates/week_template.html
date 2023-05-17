@@ -1,0 +1,70 @@
+{% extends 'main_template.html' %}
+
+{% block title %}
+    Погода за неделю
+{% endblock %}
+
+{% block main %}
+<div class="container">
+    <h1>Погода за неделю</h1>
+
+    <div class="row justify-content-center align-items-center g-2">
+        <div class="col">Текущая дата и время</div>
+        <div class="col">{{ time }}</div>
+    </div>
+    <div class="row justify-content-center align-items-center g-2">
+        <div class="col">Средняя температура</div>
+        <div class="col">{{weather.t}}</div>
+    </div>
+    <div class="row justify-content-center align-items-center g-2">
+        <div class="col">Средняя влажность</div>
+        <div class="col">{{weather.f}}</div>
+    </div>
+    <div class="row justify-content-center align-items-center g-2">
+        <div class="col">Самое частое направление ветра</div>
+        <div class="col">{{weather.wind_direction}}</div>
+    </div>
+    <div class="row justify-content-center align-items-center g-2">
+        <div class="col">Средняя скорость ветра</div>
+        <div class="col">{{weather.wind_spead}} м/с</div>
+    </div>
+    <div class="row justify-content-center align-items-center g-2">
+        <div class="col">Самая частое облачность</div>
+        <div class="col">{{weather.cloudiness}} </div>
+    </div>
+    <div class="row justify-content-center align-items-center g-2">
+        <div class="col">Самая частая комфортность</div>
+        <div class="col">{{weather.comfort}}</div>
+    </div>
+    <div class="row justify-content-center align-items-center g-2">
+        <div class="col">Самаое частое явление</div>
+        <div class="col">{{weather.conditions }}</div>
+    </div>
+</div>
+<div class="row">
+    <div class="col-md-4">
+        <div id="temp"></div>
+    </div>
+    <div class="col-md-4">
+        <div id="wind-speed"></div>
+    </div>
+    <div class="col-md-4">
+        <div id="wet"></div>
+    </div>
+</div>
+
+
+
+<script type="text/javascript">
+    var graphs = {{ graph_temp | safe}};
+    Plotly.plot('temp',graphs,{});
+</script>
+<script type="text/javascript">
+    var graphs = {{ graph_wind | safe}};
+    Plotly.plot('wind-speed',graphs,{});
+</script>
+<script type="text/javascript">
+    var graphs = {{ graph_wet | safe}};
+    Plotly.plot('wet',graphs,{});
+</script>
+{% endblock %}
