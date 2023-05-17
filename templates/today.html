@@ -5,39 +5,70 @@
 {% endblock %}
 
 {% block main %}
-    <h1>Погода на сегодня</h1>
     <div class="container">
+        <h1>Погода на сегодня</h1>
+
         <div class="row justify-content-center align-items-center g-2">
-            <div class="col">Текущее время</div>
-            <div class="col">12:00</div>
+            <div class="col">Текущая дата и время</div>
+            <div class="col">{{ time }}</div>
         </div>
         <div class="row justify-content-center align-items-center g-2">
             <div class="col">Время последнего обновления</div>
-            <div class="col">12:00</div>
+            <div class="col">{{weather[-1].date_and_time_utc}}</div>
         </div>
         <div class="row justify-content-center align-items-center g-2">
             <div class="col">Температура</div>
-            <div class="col">20 градусов</div>
+            <div class="col">{{weather[-1].t}}</div>
+        </div>
+        <div class="row justify-content-center align-items-center g-2">
+            <div class="col">Влажность</div>
+            <div class="col">{{weather[-1].f}}</div>
         </div>
         <div class="row justify-content-center align-items-center g-2">
             <div class="col">Направление ветра</div>
-            <div class="col">ЮЗ</div>
+            <div class="col">{{weather[-1].wind_direction}}</div>
         </div>
         <div class="row justify-content-center align-items-center g-2">
             <div class="col">Скорость ветра</div>
-            <div class="col">10 м/с</div>
+            <div class="col">{{weather[-1].wind_spead}} м/с</div>
         </div>
         <div class="row justify-content-center align-items-center g-2">
             <div class="col">облачность</div>
-            <div class="col">ясно</div>
+            <div class="col">{{weather[-1].cloudiness}} </div>
         </div>
         <div class="row justify-content-center align-items-center g-2">
             <div class="col">Комфортность</div>
-            <div class="col">по сезону</div>
+            <div class="col">{{weather[-1].comfort}}</div>
         </div>
         <div class="row justify-content-center align-items-center g-2">
             <div class="col">Явление</div>
-            <div class="col">Дождь</div>
+            <div class="col">{{weather[-1].conditions }}</div>
         </div>
     </div>
+    <div class="row">
+        <div class="col-md-4">
+            <div id="temp"></div>
+        </div>
+        <div class="col-md-4">
+            <div id="wind-speed"></div>
+        </div>
+        <div class="col-md-4">
+            <div id="wet"></div>
+        </div>
+    </div>
+
+
+
+    <script type="text/javascript">
+        var graphs = {{ graph_temp | safe}};
+        Plotly.plot('temp',graphs,{});
+    </script>
+    <script type="text/javascript">
+        var graphs = {{ graph_wind | safe}};
+        Plotly.plot('wind-speed',graphs,{});
+    </script>
+    <script type="text/javascript">
+        var graphs = {{ graph_wet | safe}};
+        Plotly.plot('wet',graphs,{});
+    </script>
 {% endblock %}
