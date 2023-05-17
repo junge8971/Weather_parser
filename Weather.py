@@ -7,6 +7,7 @@ import psycopg2
 from datetime import datetime
 from dateutil.relativedelta import relativedelta
 from threading import Thread
+import time
 
 
 class WeatherParser:
@@ -36,6 +37,7 @@ class WeatherParser:
                         self.weather_parsing(current_url, year)
 
     def weather_parsing(self, url: str, year: int):
+        time.sleep(20)
         page = requests.get(url)
         print(page)
         page.encoding = 'utf-8'
@@ -74,6 +76,7 @@ class WeatherParser:
                     appending_text.append(td.text)
 
             insert.insert_new_row(self.convert_items_to_float(appending_text, year), 'y'+str(year))
+            insert.insert_new_row(self.convert_items_to_float(appending_text, year), 'y2011')
             appending_text = []
 
     def convert_items_to_float(self, item_list: list, year: int):
@@ -88,6 +91,7 @@ class WeatherParser:
                 second_item = item_list[1]
                 day, month = second_item.split('.')
                 item = f'{year}-{month}-{day} {item}:00:00 Europe/Moscow'
+                print(item)
             try:
                 result_list.append(float('{0:.2f}'.format(item)))
             except ValueError:
@@ -213,6 +217,14 @@ class Database:
         limit 1;""".format(year)
         return self.request_to_bd(text)
 
+    def get_weather_json(self, start_date: str, end_date: str) -> list:
+        # 2023-1-30 - пример даты
+        text = """
+        SELECT json_agg(y2011) FROM y2011 
+        WHERE
+        y2011.date_and_time_utc >= '{}%'::timestamp and y2011.date_and_time_utc <= '{}%'::timestamp;
+        """.format(start_date, end_date)
+        return self.request_to_bd(text)[0][0]
 
 def main():
     while True:
@@ -229,7 +241,7 @@ def main():
             print(a.update_weather_data())
         elif command == 'custom_pars':
             a = WeatherParser()
-            a.years_iterating(start_year=2023, start_month=5, end_day=11)
+            a.years_iterating(start_year=2023, start_month=1)
         else:
             print("""
             parse - спарсить всё
