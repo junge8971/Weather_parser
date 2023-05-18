@@ -1,12 +1,12 @@
 {% extends 'main_template.html' %}
 
 {% block title %}
-    Погода за неделю
+    Погода за {{period}}
 {% endblock %}
 
 {% block main %}
 <div class="container">
-    <h1>Погода за неделю</h1>
+    <h1>Погода за {{period}}</h1>
 
     <div class="row justify-content-center align-items-center g-2">
         <div class="col">Текущая дата и время</div>

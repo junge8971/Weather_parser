@@ -1,16 +1,18 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-import pandas
+
 from flask import Flask, render_template
 
 from datetime import datetime, timedelta
+import re
+
+import pandas
 import pandas as pd
 import json
 import plotly
 import plotly.express as px
 
 from Weather import Database, WeatherParser
-
 
 app = Flask(__name__)
 app.secret_key = 'asfouhvnsldvszkldvmszdfv'
@@ -21,11 +23,7 @@ def main():
     current_date = datetime.now().date()
     db = Database()
     current_weather = db.get_weather_json(str(current_date), str(current_date + timedelta(days=1)))
-
-    for item in current_weather:
-        item['date_and_time_utc'] = item['date_and_time_utc'].replace('T', ' ').replace('+03:00', '')
-        if item['conditions'] is None:
-            item['conditions'] = 'Нет'
+    current_weather = make_weather_data_prettily(current_weather)
 
     data_frame = pd.DataFrame.from_records(current_weather)
 
@@ -42,11 +40,7 @@ def week():
     start_date = current_date - timedelta(days=current_week_day)
     db = Database()
     week_weather = db.get_weather_json(str(start_date), str(current_date))
-
-    for item in week_weather:
-        item['date_and_time_utc'] = item['date_and_time_utc'].replace('T', ' ').replace('+03:00', '')
-        if item['conditions'] is None:
-            item['conditions'] = 'Нет'
+    week_weather = make_weather_data_prettily(week_weather)
 
     data_frame = pd.DataFrame.from_records(week_weather)
 
@@ -54,8 +48,41 @@ def week():
 
     graphs = make_graphs(data_frame)
 
-    return render_template('week_template.html', weather=weather, time=datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+    return render_template('period_template.html', period='неделю', weather=weather, time=datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
                            graph_temp=graphs.get('temp'), graph_wind=graphs.get('wind'), graph_wet=graphs.get('wet'))
+
+
+@app.route('/month')
+def month():
+    current_date = datetime.now().date()
+    current_day = current_date.day
+    start_date = current_date - timedelta(days=current_day)
+    db = Database()
+    month_weather = db.get_weather_json(str(start_date), str(current_date))
+
+    month_weather = make_weather_data_prettily(month_weather)
+
+    data_frame = pd.DataFrame.from_records(month_weather)
+
+    weather = make_json_with_mean_data(data_frame)
+
+    graphs = make_graphs(data_frame)
+
+    return render_template('period_template.html', period='месяц', weather=weather, time=datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                           graph_temp=graphs.get('temp'), graph_wind=graphs.get('wind'), graph_wet=graphs.get('wet'))
+
+
+def make_weather_data_prettily(data: list[dict]) -> list[dict]:
+    for item in data:
+        item['date_and_time_utc'] = item['date_and_time_utc'].replace('T', ' ').replace('+03:00', '')
+        if item['conditions'] is None:
+            item['conditions'] = 'Нет'
+
+        try:
+            item['wind_spead'] = float(item['wind_spead'])
+        except ValueError:
+            item['wind_spead'] = max(re.findall('(\d+)', item['wind_spead']))
+    return data
 
 
 def make_graphs(data_frame: pandas.DataFrame) -> dict[str:str]:
