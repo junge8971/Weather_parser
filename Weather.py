@@ -122,18 +122,12 @@ class WeatherParser:
     def update_weather_data(self) -> str:
         list_of_years = self.get_list_of_years_from_bd()
         last_received_date = self.get_last_received_date_and_time(list_of_years)
-        if last_received_date.date() != self.current_date.date():
-            if last_received_date.month == self.current_date.month:
-            # delta_time = relativedelta(self.current_date.date(), last_received_date)
-                self.years_iterating(start_year=last_received_date.year,
-                                     start_month=last_received_date.month,
-                                     start_day=last_received_date.day,
-                                     end_day=self.current_date.day)
-                return 'Update ok'
-            else:
-                return 'No way to update'
-        else:
-            return 'No need to update'
+        # delta_time = relativedelta(self.current_date.date(), last_received_date)
+        self.years_iterating(start_year=last_received_date.year,
+                             start_month=last_received_date.month,
+                             start_day=last_received_date.day,
+                             end_day=self.current_date.day)
+        return 'Update ok'
 
 
 class Database:
@@ -225,6 +219,7 @@ class Database:
         y2011.date_and_time_utc >= '{}%'::timestamp and y2011.date_and_time_utc <= '{}%'::timestamp;
         """.format(start_date, end_date)
         return self.request_to_bd(text)[0][0]
+
 
 def main():
     while True:
